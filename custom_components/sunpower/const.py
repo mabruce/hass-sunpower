@@ -137,7 +137,7 @@ INVERTER_SENSORS = {
         "v_mppt1_v", "MPPT Volts", UnitOfElectricPotential.VOLT, "mdi:flash", SensorDeviceClass.VOLTAGE, SensorStateClass.MEASUREMENT
     ),
     "INVERTER_MPPT_A": SensorConfig(
-        "i_mppt1_a", "MPPT Amps", POWER_VOLT_AMPERE, "mdi:flash", SensorDeviceClass.CURRENT, SensorStateClass.MEASUREMENT
+        "i_mppt1_a", "MPPT Amps", UnitOfApparentPower.VOLT_AMPERE, "mdi:flash", SensorDeviceClass.CURRENT, SensorStateClass.MEASUREMENT
     ),
     "INVERTER_TEMPERATURE": SensorConfig(
         "t_htsnk_degc",
