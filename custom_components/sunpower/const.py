@@ -1,6 +1,9 @@
 """Constants for the sunpower integration."""
 from collections import namedtuple
-
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorStateClass,
+)
 from homeassistant.const import (
     TIME_SECONDS,
     DATA_KILOBYTES,
@@ -12,18 +15,23 @@ from homeassistant.const import (
     ELECTRIC_POTENTIAL_VOLT,
     ELECTRIC_CURRENT_AMPERE,
     TEMP_CELSIUS,
-    DEVICE_CLASS_ENERGY,
-    DEVICE_CLASS_POWER,
-    DEVICE_CLASS_VOLTAGE,
-    DEVICE_CLASS_CURRENT,
-    DEVICE_CLASS_TEMPERATURE,
-    DEVICE_CLASS_POWER_FACTOR,
-)
-
-from homeassistant.components.sensor import (
-    STATE_CLASS_MEASUREMENT,
-    STATE_CLASS_TOTAL,
-    STATE_CLASS_TOTAL_INCREASING,
+    SensorDeviceClass.ENERGY,
+    SensorDeviceClass.POWER,
+    SensorDeviceClass.VOLTAGE,
+    SensorDeviceClass.CURRENT,
+    SensorDeviceClass.TEMPERATURE,
+    SensorDeviceClass.POWER_FACTOR,
+    EntityCategory,
+    UnitOfApparentPower,
+    UnitOfElectricCurrent,
+    UnitOfElectricPotential,
+    UnitOfEnergy,
+    UnitOfFrequency,
+    UnitOfInformation,
+    UnitOfPower,
+    UnitOfReactivePower,
+    UnitOfTemperature,
+    UnitOfTime,
 )
 
 DOMAIN = "sunpower"
@@ -33,6 +41,9 @@ SUNPOWER_OBJECT = "sunpower"
 SUNPOWER_HOST = "host"
 SUNPOWER_COORDINATOR = "coordinator"
 UPDATE_INTERVAL = 120
+DEFAULT_SUNPOWER_UPDATE_INTERVAL = 120
+MIN_SUNPOWER_UPDATE_INTERVAL = 60
+SUNPOWER_UPDATE_INTERVAL = "PVS_UPDATE_INTERVAL"
 SETUP_TIMEOUT_MIN = 5
 
 PVS_DEVICE_TYPE = "PVS"
@@ -52,64 +63,64 @@ SensorConfig = namedtuple("SensorConfig", "field title unit icon device_class st
 
 METER_SENSORS = {
     "METER_FREQUENCY": SensorConfig(
-        "freq_hz", "Frequency", FREQUENCY_HERTZ, "mdi:flash", None, STATE_CLASS_MEASUREMENT
+        "freq_hz", "Frequency", FREQUENCY_HERTZ, "mdi:flash", None, SensorStateClass.MEASUREMENT
     ),
     "METER_NET_KWH": SensorConfig(
         "net_ltea_3phsum_kwh",
         "Lifetime Power",
         ENERGY_KILO_WATT_HOUR,
         "mdi:flash",
-        DEVICE_CLASS_ENERGY,
-        STATE_CLASS_TOTAL_INCREASING,
+        SensorDeviceClass.ENERGY,
+        SensorStateClass.TOTAL_INCREASING,
     ),
     "METER_KW": SensorConfig(
-        "p_3phsum_kw", "Power", POWER_KILO_WATT, "mdi:flash", DEVICE_CLASS_POWER, STATE_CLASS_MEASUREMENT
+        "p_3phsum_kw", "Power", POWER_KILO_WATT, "mdi:flash", SensorDeviceClass.POWER, SensorStateClass.MEASUREMENT
     ),
     "METER_VAR": SensorConfig(
-        "q_3phsum_kvar", "KVA Reactive", POWER_VOLT_AMPERE, "mdi:flash", None, STATE_CLASS_MEASUREMENT
+        "q_3phsum_kvar", "KVA Reactive", POWER_VOLT_AMPERE, "mdi:flash", None, SensorStateClass.MEASUREMENT
     ),
     "METER_VA": SensorConfig(
-        "s_3phsum_kva", "KVA Apparent", POWER_VOLT_AMPERE, "mdi:flash", None, STATE_CLASS_MEASUREMENT
+        "s_3phsum_kva", "KVA Apparent", POWER_VOLT_AMPERE, "mdi:flash", None, SensorStateClass.MEASUREMENT
     ),
     "METER_POWER_FACTOR": SensorConfig(
-        "tot_pf_rto", "Power Factor", PERCENTAGE, "mdi:flash", DEVICE_CLASS_POWER_FACTOR, STATE_CLASS_MEASUREMENT
+        "tot_pf_rto", "Power Factor", PERCENTAGE, "mdi:flash", SensorDeviceClass.POWER_FACTOR, SensorStateClass.MEASUREMENT
     ),
     "METER_L1_A": SensorConfig(
-        "i1_a", "Leg 1 Amps", ELECTRIC_CURRENT_AMPERE, "mdi:flash", DEVICE_CLASS_CURRENT, STATE_CLASS_MEASUREMENT
+        "i1_a", "Leg 1 Amps", ELECTRIC_CURRENT_AMPERE, "mdi:flash", SensorDeviceClass.CURRENT, SensorStateClass.MEASUREMENT
     ),
     "METER_L2_A": SensorConfig(
-        "i2_a", "Leg 2 Amps", ELECTRIC_CURRENT_AMPERE, "mdi:flash", DEVICE_CLASS_CURRENT, STATE_CLASS_MEASUREMENT
+        "i2_a", "Leg 2 Amps", ELECTRIC_CURRENT_AMPERE, "mdi:flash", SensorDeviceClass.CURRENT, SensorStateClass.MEASUREMENT
     ),
     "METER_L1_KW": SensorConfig(
-        "p1_kw", "Leg 1 KW", POWER_KILO_WATT, "mdi:flash", DEVICE_CLASS_POWER, STATE_CLASS_MEASUREMENT
+        "p1_kw", "Leg 1 KW", POWER_KILO_WATT, "mdi:flash", SensorDeviceClass.POWER, SensorStateClass.MEASUREMENT
     ),
     "METER_L2_KW": SensorConfig(
-        "p2_kw", "Leg 2 KW", POWER_KILO_WATT, "mdi:flash", DEVICE_CLASS_POWER, STATE_CLASS_MEASUREMENT
+        "p2_kw", "Leg 2 KW", POWER_KILO_WATT, "mdi:flash", SensorDeviceClass.POWER, SensorStateClass.MEASUREMENT
     ),
     "METER_L1_V": SensorConfig(
-        "v1n_v", "Leg 1 Volts", ELECTRIC_POTENTIAL_VOLT, "mdi:flash", DEVICE_CLASS_VOLTAGE, STATE_CLASS_MEASUREMENT
+        "v1n_v", "Leg 1 Volts", ELECTRIC_POTENTIAL_VOLT, "mdi:flash", SensorDeviceClass.VOLTAGE, SensorStateClass.MEASUREMENT
     ),
     "METER_L2_V": SensorConfig(
-        "v2n_v", "Leg 2 Volts", ELECTRIC_POTENTIAL_VOLT, "mdi:flash", DEVICE_CLASS_VOLTAGE, STATE_CLASS_MEASUREMENT
+        "v2n_v", "Leg 2 Volts", ELECTRIC_POTENTIAL_VOLT, "mdi:flash", SensorDeviceClass.VOLTAGE, SensorStateClass.MEASUREMENT
     ),
     "METER_L12_V": SensorConfig(
-        "v12_v", "Supply Volts", ELECTRIC_POTENTIAL_VOLT, "mdi:flash", DEVICE_CLASS_VOLTAGE, STATE_CLASS_MEASUREMENT
+        "v12_v", "Supply Volts", ELECTRIC_POTENTIAL_VOLT, "mdi:flash", SensorDeviceClass.VOLTAGE, SensorStateClass.MEASUREMENT
     ),
     "METER_TO_GRID": SensorConfig(
         "neg_ltea_3phsum_kwh",
         "KWH To Grid",
         ENERGY_KILO_WATT_HOUR,
         "mdi:flash",
-        DEVICE_CLASS_ENERGY,
-        STATE_CLASS_TOTAL_INCREASING,
+        SensorDeviceClass.ENERGY,
+        SensorStateClass.TOTAL_INCREASING,
     ),
     "METER_TO_HOME": SensorConfig(
         "pos_ltea_3phsum_kwh",
         "KWH To Home",
         ENERGY_KILO_WATT_HOUR,
         "mdi:flash",
-        DEVICE_CLASS_ENERGY,
-        STATE_CLASS_TOTAL_INCREASING,
+        SensorDeviceClass.ENERGY,
+        SensorStateClass.TOTAL_INCREASING,
     ),
 }
 
@@ -119,67 +130,67 @@ INVERTER_SENSORS = {
         "Lifetime Power",
         ENERGY_KILO_WATT_HOUR,
         "mdi:flash",
-        DEVICE_CLASS_ENERGY,
-        STATE_CLASS_TOTAL_INCREASING,
+        SensorDeviceClass.ENERGY,
+        SensorStateClass.TOTAL_INCREASING,
     ),
     "INVERTER_KW": SensorConfig(
-        "p_3phsum_kw", "Power", POWER_KILO_WATT, "mdi:flash", DEVICE_CLASS_POWER, STATE_CLASS_MEASUREMENT
+        "p_3phsum_kw", "Power", POWER_KILO_WATT, "mdi:flash", SensorDeviceClass.POWER, SensorStateClass.MEASUREMENT
     ),
     "INVERTER_VOLTS": SensorConfig(
-        "vln_3phavg_v", "Voltage", ELECTRIC_POTENTIAL_VOLT, "mdi:flash", DEVICE_CLASS_VOLTAGE, STATE_CLASS_MEASUREMENT
+        "vln_3phavg_v", "Voltage", ELECTRIC_POTENTIAL_VOLT, "mdi:flash", SensorDeviceClass.VOLTAGE, SensorStateClass.MEASUREMENT
     ),
     "INVERTER_AMPS": SensorConfig(
-        "i_3phsum_a", "Amps", ELECTRIC_CURRENT_AMPERE, "mdi:flash", DEVICE_CLASS_CURRENT, STATE_CLASS_MEASUREMENT
+        "i_3phsum_a", "Amps", ELECTRIC_CURRENT_AMPERE, "mdi:flash", SensorDeviceClass.CURRENT, SensorStateClass.MEASUREMENT
     ),
     "INVERTER_MPPT_KW": SensorConfig(
-        "p_mpptsum_kw", "MPPT KW", POWER_KILO_WATT, "mdi:flash", DEVICE_CLASS_POWER, STATE_CLASS_MEASUREMENT
+        "p_mpptsum_kw", "MPPT KW", POWER_KILO_WATT, "mdi:flash", SensorDeviceClass.POWER, SensorStateClass.MEASUREMENT
     ),
     "INVERTER_MPPT1_KW": SensorConfig(
-        "p_mppt1_kw", "MPPT KW", POWER_KILO_WATT, "mdi:flash", DEVICE_CLASS_POWER, STATE_CLASS_MEASUREMENT
+        "p_mppt1_kw", "MPPT KW", POWER_KILO_WATT, "mdi:flash", SensorDeviceClass.POWER, SensorStateClass.MEASUREMENT
     ),
     "INVERTER_MPPT_V": SensorConfig(
-        "v_mppt1_v", "MPPT Volts", ELECTRIC_POTENTIAL_VOLT, "mdi:flash", DEVICE_CLASS_VOLTAGE, STATE_CLASS_MEASUREMENT
+        "v_mppt1_v", "MPPT Volts", ELECTRIC_POTENTIAL_VOLT, "mdi:flash", SensorDeviceClass.VOLTAGE, SensorStateClass.MEASUREMENT
     ),
     "INVERTER_MPPT_A": SensorConfig(
-        "i_mppt1_a", "MPPT Amps", POWER_VOLT_AMPERE, "mdi:flash", DEVICE_CLASS_CURRENT, STATE_CLASS_MEASUREMENT
+        "i_mppt1_a", "MPPT Amps", POWER_VOLT_AMPERE, "mdi:flash", SensorDeviceClass.CURRENT, SensorStateClass.MEASUREMENT
     ),
     "INVERTER_TEMPERATURE": SensorConfig(
         "t_htsnk_degc",
         "Temperature",
         TEMP_CELSIUS,
         "mdi:thermometer",
-        DEVICE_CLASS_TEMPERATURE,
-        STATE_CLASS_MEASUREMENT,
+        SensorDeviceClass.TEMPERATURE,
+        SensorStateClass.MEASUREMENT,
     ),
     "INVERTER_FREQUENCY": SensorConfig(
-        "freq_hz", "Frequency", FREQUENCY_HERTZ, "mdi:flash", None, STATE_CLASS_MEASUREMENT
+        "freq_hz", "Frequency", FREQUENCY_HERTZ, "mdi:flash", None, SensorStateClass.MEASUREMENT
     ),
 }
 
 
 PVS_SENSORS = {
-    "PVS_LOAD": SensorConfig("dl_cpu_load", "System Load", "", "mdi:gauge", None, STATE_CLASS_MEASUREMENT),
-    "PVS_ERROR_COUNT": SensorConfig("dl_err_count", "Error Count", "", "mdi:alert-circle", None, STATE_CLASS_TOTAL),
+    "PVS_LOAD": SensorConfig("dl_cpu_load", "System Load", "", "mdi:gauge", None, SensorStateClass.MEASUREMENT),
+    "PVS_ERROR_COUNT": SensorConfig("dl_err_count", "Error Count", "", "mdi:alert-circle", None, SensorStateClass.TOTAL),
     "PVS_COMMUNICATION_ERRORS": SensorConfig(
-        "dl_comm_err", "Communication Errors", "", "mdi:network-off", None, STATE_CLASS_TOTAL
+        "dl_comm_err", "Communication Errors", "", "mdi:network-off", None, SensorStateClass.TOTAL
     ),
     "PVS_SKIPPED_SCANS": SensorConfig(
-        "dl_skipped_scans", "Skipped Scans", "", "mdi:network-strength-off-outline", None, STATE_CLASS_TOTAL_INCREASING
+        "dl_skipped_scans", "Skipped Scans", "", "mdi:network-strength-off-outline", None, SensorStateClass.TOTAL_INCREASING
     ),
     "PVS_SCAN_TIME": SensorConfig(
-        "dl_scan_time", "Scan Time", TIME_SECONDS, "mdi:timer-outline", None, STATE_CLASS_MEASUREMENT
+        "dl_scan_time", "Scan Time", TIME_SECONDS, "mdi:timer-outline", None, SensorStateClass.MEASUREMENT
     ),
     "PVS_UNTRANSMITTED": SensorConfig(
-        "dl_untransmitted", "Untransmitted Data", "", "mdi:radio-tower", None, STATE_CLASS_MEASUREMENT
+        "dl_untransmitted", "Untransmitted Data", "", "mdi:radio-tower", None, SensorStateClass.MEASUREMENT
     ),
     "PVS_UPTIME": SensorConfig(
-        "dl_uptime", "Uptime", TIME_SECONDS, "mdi:timer-outline", None, STATE_CLASS_TOTAL_INCREASING
+        "dl_uptime", "Uptime", TIME_SECONDS, "mdi:timer-outline", None, SensorStateClass.TOTAL_INCREASING
     ),
     "PVS_MEMORY_USED": SensorConfig(
-        "dl_mem_used", "Memory Used", DATA_KILOBYTES, "mdi:memory", None, STATE_CLASS_MEASUREMENT
+        "dl_mem_used", "Memory Used", DATA_KILOBYTES, "mdi:memory", None, SensorStateClass.MEASUREMENT
     ),
     "PVS_FLASH_AVAILABLE": SensorConfig(
-        "dl_flash_avail", "Flash Available", DATA_KILOBYTES, "mdi:memory", None, STATE_CLASS_MEASUREMENT
+        "dl_flash_avail", "Flash Available", DATA_KILOBYTES, "mdi:memory", None, SensorStateClass.MEASUREMENT
     ),
 }
 

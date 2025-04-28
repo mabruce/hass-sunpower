@@ -1,16 +1,19 @@
 """The sunpower integration."""
 import asyncio
-from datetime import timedelta
 import logging
 import time
+from datetime import timedelta
 
 import voluptuous as vol
-
-from .sunpower import SunPowerMonitor, ConnectionException
-
-from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
+from homeassistant.config_entries import (
+    SOURCE_IMPORT,
+    ConfigEntry,
+)
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.helpers.update_coordinator import (
+    DataUpdateCoordinator,
+    UpdateFailed,
+)
 
 from .const import (
     DOMAIN,
@@ -19,6 +22,11 @@ from .const import (
     SUNPOWER_COORDINATOR,
     SUNPOWER_HOST,
     SETUP_TIMEOUT_MIN,
+)
+from .sunpower import (
+    ConnectionException,
+    ParseException,
+    SunPowerMonitor,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -60,13 +68,14 @@ async def async_setup(hass: HomeAssistant, config: dict):
             DOMAIN,
             context={"source": SOURCE_IMPORT},
             data=conf,
-        )
+        ),
     )
     return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up sunpower from a config entry."""
+    _LOGGER.debug(f"Setting up {entry.entry_id}, Options {entry.options}, Config {entry.data}")
     entry_id = entry.entry_id
 
     hass.data[DOMAIN].setdefault(entry_id, {})
@@ -99,19 +108,30 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             _LOGGER.error("Failed to update data")
             break
 
-    for component in PLATFORMS:
-        hass.async_create_task(hass.config_entries.async_forward_entry_setup(entry, component))
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
+    entry.async_on_unload(entry.add_update_listener(update_listener))
 
     return True
 
 
+async def update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Update listener."""
+    _LOGGER.debug(
+        "Updating: %s with data=%s and options=%s",
+        entry.entry_id,
+        entry.data,
+        entry.options,
+    )
+    _LOGGER.debug("Update listener called, reloading")
+    await hass.config_entries.async_reload(entry.entry_id)
+    _LOGGER.debug("Update listener done reloading")
+
+
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Unload a config entry."""
-    unload_ok = all(
-        await asyncio.gather(
-            *[hass.config_entries.async_forward_entry_unload(entry, component) for component in PLATFORMS]
-        )
-    )
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id)
 

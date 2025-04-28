@@ -1,7 +1,11 @@
 """Support for Sunpower sensors."""
+
 import logging
 
-from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+)
 
 from .const import (
     DOMAIN,

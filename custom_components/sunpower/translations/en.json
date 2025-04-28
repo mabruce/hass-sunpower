@@ -5,7 +5,7 @@
         },
         "error": {
             "cannot_connect": "Cannot Connect",
-            "unknown": "Unkown Error"
+            "unknown": "Unknown Error"
         },
         "step": {
             "user": {

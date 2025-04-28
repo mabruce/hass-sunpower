@@ -8,6 +8,10 @@ class ConnectionException(Exception):
     """Any failure to connect to sunpower PVS"""
 
 
+class ParseException(Exception):
+    """Any failure to connect to sunpower PVS"""
+
+
 class SunPowerMonitor:
     """Basic Class to talk to sunpower pvs 2/5/6 via the management interface 'API'.  This is not a public API so it might fail at any time.
     if you find this usefull please complain to sunpower and your sunpower dealer that they
